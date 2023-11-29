@@ -66,36 +66,65 @@ namespace Othello
                     return;
 
                 //8방향 모두 체크
-                bool isValid = false;
                 var pivot = stoneInfo.Coord;
-                for(int dir = 0; dir < 8; dir ++)
+                Dictionary<int, Point?> nearestPointByDirection = new Dictionary<int, Point?>();
+                for (int dir = 0; dir < 8; dir++)
                 {
-                    bool check = false;
-                    for(int dist = _boardSize - 1; dist >= 0; dist--)
+                    nearestPointByDirection.Add(dir, null);
+                    for (int dist = 1; dist < _boardSize; dist++)
                     {
                         var nextPoint = Point.Add(pivot, new Size(dist * dx[dir], dist * dy[dir]));
 
                         if (nextPoint.X < 0 || nextPoint.Y < 0 || nextPoint.X > _boardSize - 1 || nextPoint.Y > _boardSize - 1)
                             continue;
 
-                        if (_btns[nextPoint.X,nextPoint.Y].Tag is StoneInfo nextStoneInfo)
+                        if (_btns[nextPoint.X, nextPoint.Y].Tag is StoneInfo nextStoneInfo)
                         {
-                            if(nextStoneInfo.Side == null)
-                                continue;
+                            if (nextStoneInfo.Side == null)
+                                break;
 
                             if(nextStoneInfo.Side == _side)
                             {
-                                check = true;
+                                nearestPointByDirection[dir] = nextPoint;
+                                break;
+                            }
+                            else
                                 continue;
-                            }
-
-                            if(check)
-                            {
-                                isValid = true;
-                                nextStoneInfo.Side = _side;
-                                _btns[nextPoint.X, nextPoint.Y].BackColor = _side ? Color.Black : Color.White;
-                            }
                         }
+                    }
+                }
+
+                bool isValid = false;
+                for(int dir = 0; dir < 8; dir ++)
+                {
+                    if (!nearestPointByDirection.TryGetValue(dir, out var startPoint) || startPoint == null)
+                        continue;
+
+                    bool check = false;
+                    List<Button> checkBtns = new List<Button>();
+                    for(int dist = _boardSize - 1; dist >= 1; dist--)
+                    {
+                        var nextPoint = Point.Add(pivot, new Size(dist * dx[dir], dist * dy[dir]));
+
+                        if (nextPoint.X < 0 || nextPoint.Y < 0 || nextPoint.X > _boardSize - 1 || nextPoint.Y > _boardSize - 1)
+                            continue;
+
+                        if(startPoint.Value.X == nextPoint.X && startPoint.Value.Y == nextPoint.Y)
+                        {
+                            check = true;
+                            continue;
+                        }
+
+                        if (check) checkBtns.Add(_btns[nextPoint.X, nextPoint.Y]);
+                    }
+
+                    foreach (var checkBtn in checkBtns)
+                    {
+                        isValid = true;
+
+                        if (checkBtn.Tag is StoneInfo nextStoneInfo)
+                            nextStoneInfo.Side = _side;
+                        checkBtn.BackColor = _side ? Color.Black : Color.White;
                     }
                 }
 
