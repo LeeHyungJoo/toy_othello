@@ -2,8 +2,9 @@ namespace Othello
 {
     public partial class OthelloForm : Form
     {
-        private const int BoardSize = 8;
-        private Button[,] boardButtons;
+        private const int _boardSize = 8;
+        private Button[,] _btns;
+        private bool _side;
 
         public OthelloForm()
         {
@@ -13,27 +14,25 @@ namespace Othello
 
         private void InitializeBoard()
         {
-            const int ButtonSize = 30;
-            const int Gap = 2;
-            boardButtons = new Button[BoardSize, BoardSize]!;
+            const int btnSize = 30;
+            const int gap = 2;
+            _btns = new Button[_boardSize, _boardSize]!;
 
-            for (var i = 0; i < BoardSize; i++)
+            for (var i = 0; i < _boardSize; i++)
             {
-                for (var j = 0; j < BoardSize; j++)
+                for (var j = 0; j < _boardSize; j++)
                 {
                     var button = new Button
                     {
-                        Width = ButtonSize,
-                        Height = ButtonSize,
-                        Location = new Point(j * (ButtonSize + Gap) + Gap, i * (ButtonSize + Gap) + Gap),
-                        Tag = new Point(i, j),
-                        Font = new Font("Arial", 12),
-                        Text = "",
+                        Width = btnSize,
+                        Height = btnSize,
+                        Location = new Point(j * (btnSize + gap) + gap, i * (btnSize + gap) + gap),
+                        Tag = new StoneInfo(new Point(i, j)),
                         TextAlign = ContentAlignment.MiddleCenter
                     };
 
                     button.Click += BoardButtonClick!;
-                    boardButtons[i, j] = button;
+                    _btns[i, j] = button;
                     Controls.Add(button);
                 }
             }
@@ -42,7 +41,18 @@ namespace Othello
         private void BoardButtonClick(object sender, EventArgs e)
         {
             var button = (Button)sender;
-            var point = (Point)button.Tag!;
+
+            if(button.Tag is  StoneInfo stoneInfo)
+            {
+                if(stoneInfo.Side != null)
+                {
+                    return;
+                }
+
+                stoneInfo.Side = _side;
+                button.BackColor = _side ? Color.Black : Color.White;
+                _side = !_side;
+            }
         }
     }
 }
