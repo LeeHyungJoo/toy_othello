@@ -14,5 +14,6 @@ class StoneInfo
     public StoneInfo(Point coord)
     {
         Coord = coord;
+        Side = null;
     }
 }
